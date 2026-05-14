@@ -1,0 +1,244 @@
+﻿# Dependencies
+**/node_modules
+.pnpm-store/
+.tools/
+
+# Build outputs
+dist/
+build/
+*.dist
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+*.bak
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+
+# Gatsby files
+.cache/
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Webdev artifacts (checkpoint zips, migrations, etc.)
+.webdev/
+
+# Manus version file (auto-generated, not part of source)
+client/public/__manus__/version.json
+
+# Local cleanup: ignore accidental flattened root files from migration copy
+/_journal.json
+/0000_furry_korg.sql
+/0000_snapshot.json
+/0001_living_malcolm_colcord.sql
+/0001_snapshot.json
+/accordion.tsx
+/AIChatBox.tsx
+/alert.tsx
+/alert-dialog.tsx
+/analysis.ts
+/App.tsx
+/aspect-ratio.tsx
+/auth.logout.test.ts
+/AuthGuard.tsx
+/avatar.tsx
+/badge.tsx
+/BestsellerCardsTable.tsx
+/breadcrumb.tsx
+/button.tsx
+/button-group.tsx
+/calendar.tsx
+/card.tsx
+/carousel.tsx
+/category-report-analysis-workflow.yml
+/chart.tsx
+/checkbox.tsx
+/collapsible.tsx
+/command.tsx
+/competitorScraper.ts
+/ComponentShowcase.tsx
+/const.ts
+/context.ts
+/context-menu.tsx
+/cookie.d.ts
+/cookies.ts
+/DashboardLayout.tsx
+/DashboardLayoutSkeleton.tsx
+/dataApi.ts
+/db.ts
+/dev.mjs
+/dialog.tsx
+/dify.ts
+/drawer.tsx
+/dropdown-menu.tsx
+/DualPlatformTable.tsx
+/empty.tsx
+/env.ts
+/ErrorBoundary.tsx
+/errors.ts
+/feishuAuth.test.ts
+/feishuAuth.ts
+/FeishuLogin.tsx
+/field.tsx
+/form.tsx
+/format.ts
+/Home.tsx
+/hover-card.tsx
+/imageGeneration.ts
+/index.css
+/index.html
+/index.ts
+/input.tsx
+/input-group.tsx
+/input-otp.tsx
+/item.tsx
+/kbd.tsx
+/KeySkcCardsTable.tsx
+/KeySkcSummaryRow.tsx
+/label.tsx
+/llm.ts
+/main.tsx
+/ManusDialog.tsx
+/manusTypes.ts
+/map.ts
+/Map.tsx
+/menubar.tsx
+/monthlyDb.ts
+/monthlyImport.ts
+/MonthlyImport.tsx
+/navigation-menu.tsx
+/NotFound.tsx
+/notification.ts
+/oauth.ts
+/pagination.tsx
+/popover.tsx
+/progress.tsx
+/radio-group.tsx
+/recreate-monthly-table.mjs
+/relations.ts
+/Report.tsx
+/resizable.tsx
+/routers.ts
+/SalesComparisonTable.tsx
+/schema.ts
+/scroll-area.tsx
+/sdk.ts
+/select.tsx
+/separator.tsx
+/sheet.tsx
+/sheetsData.test.ts
+/sheetsData.ts
+/sidebar.tsx
+/skeleton.tsx
+/slider.tsx
+/sonner.tsx
+/spinner.tsx
+/start.mjs
+/storage.ts
+/switch.tsx
+/systemRouter.ts
+/table.tsx
+/tabs.tsx
+/textarea.tsx
+/ThemeContext.tsx
+/toggle.tsx
+/toggle-group.tsx
+/tooltip.tsx
+/trpc.ts
+/types.ts
+/useAuth.ts
+/useComposition.ts
+/useMobile.tsx
+/usePersistFn.ts
+/utils.ts
+/vite.ts
+/voiceTranscription.ts
+/wouter@3.7.1.patch
+# End local cleanup

@@ -1,0 +1,173 @@
+app:
+  description: Category weekly/monthly report AI analysis workflow. The report app sends the module-specific prompt and compact JSON data.
+  icon: bar_chart
+  icon_background: '#E0F2FE'
+  mode: workflow
+  name: Category Report Module Analysis
+  use_icon_as_answer_icon: false
+kind: app
+version: 0.3.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions: []
+      allowed_file_types: []
+      allowed_file_upload_methods: []
+      enabled: false
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: false
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: start-source-llm-target
+      source: start
+      sourceHandle: source
+      target: llm
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: end
+      id: llm-source-end-target
+      source: llm
+      sourceHandle: source
+      target: end
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: ''
+        selected: false
+        title: Start
+        type: start
+        variables:
+        - label: module_key
+          max_length: 128
+          options: []
+          required: true
+          type: text-input
+          variable: module_key
+        - label: system_prompt
+          max_length: 20000
+          options: []
+          required: true
+          type: paragraph
+          variable: system_prompt
+        - label: user_prompt
+          max_length: 50000
+          options: []
+          required: true
+          type: paragraph
+          variable: user_prompt
+        - label: module_data_json
+          max_length: 50000
+          options: []
+          required: false
+          type: paragraph
+          variable: module_data_json
+      height: 220
+      id: start
+      position:
+        x: 80
+        y: 280
+      positionAbsolute:
+        x: 80
+        y: 280
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            temperature: 0.2
+          mode: chat
+          name: gpt-4o
+          provider: openai
+        prompt_template:
+        - id: system-prompt
+          role: system
+          text: '{{#start.system_prompt#}}'
+        - id: user-prompt
+          role: user
+          text: '{{#start.user_prompt#}}'
+        selected: false
+        title: Generate module analysis
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 120
+      id: llm
+      position:
+        x: 400
+        y: 280
+      positionAbsolute:
+        x: 400
+        y: 280
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - llm
+          - text
+          variable: analysis_text
+        selected: false
+        title: End
+        type: end
+      height: 90
+      id: end
+      position:
+        x: 720
+        y: 280
+      positionAbsolute:
+        x: 720
+        y: 280
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    viewport:
+      x: 0
+      y: 0
+      zoom: 0.8

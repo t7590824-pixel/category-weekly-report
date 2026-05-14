@@ -1,0 +1,12 @@
+node_modules
+dist
+.pnpm-store
+.tools
+.webdev
+.manus-logs
+.env
+*.zip
+*.docx
+coverage
+tmp
+temp
