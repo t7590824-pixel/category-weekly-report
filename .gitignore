@@ -2,6 +2,7 @@
 **/node_modules
 .pnpm-store/
 .tools/
+package-lock.json
 
 # Build outputs
 dist/
@@ -114,6 +115,7 @@ temp/
 client/public/__manus__/version.json
 
 # Local cleanup: ignore accidental flattened root files from migration copy
+/.env
 /_journal.json
 /0000_furry_korg.sql
 /0000_snapshot.json
@@ -197,6 +199,7 @@ client/public/__manus__/version.json
 /NotFound.tsx
 /notification.ts
 /oauth.ts
+/package-lock.json
 /pagination.tsx
 /popover.tsx
 /progress.tsx
