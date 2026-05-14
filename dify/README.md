@@ -25,7 +25,7 @@ Dify calls the company model and returns:
 6. Configure the report system:
 
 ```env
-DIFY_API_URL=https://your-dify-domain/v1
+DIFY_API_URL=http://dify.kapeixi.cn/v1
 DIFY_API_KEY=your-workflow-api-key
 DIFY_USER=category-weekly-report
 ```
