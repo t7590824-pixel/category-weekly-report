@@ -461,6 +461,26 @@ function hashString(value: string) {
   return hash.toString(36);
 }
 
+function getAnalysisTitle(moduleKey: string) {
+  if (moduleKey.startsWith("elements_cat_")) {
+    return `${moduleKey.replace("elements_cat_", "")} 畅销元素分析`;
+  }
+
+  const titles: Record<string, string> = {
+    targetProgress: "整体达成进度分析",
+    salesYoY: "销售同比分析",
+    salesWoW: "销售环比分析",
+    dualPlatform: "双端情况分析",
+    channel: "渠道表现分析",
+    newOld: "新老品表现分析",
+    scene: "场景表现分析",
+    elements: "畅销元素分析",
+    keySkc: "重点 SKC 分析",
+  };
+
+  return titles[moduleKey] ?? "模块数据分析";
+}
+
 function AnalysisBox({ moduleKey, data }: { moduleKey: string; data: unknown }) {
   const [text, setText] = useState<string | null>(null);
   const [isCached, setIsCached] = useState(false);
@@ -472,6 +492,7 @@ function AnalysisBox({ moduleKey, data }: { moduleKey: string; data: unknown }) 
     () => `category-report-ai:${moduleKey}:${hashString(dataJson)}`,
     [moduleKey, dataJson],
   );
+  const title = getAnalysisTitle(moduleKey);
 
   useEffect(() => {
     try {
@@ -509,7 +530,7 @@ function AnalysisBox({ moduleKey, data }: { moduleKey: string; data: unknown }) 
     <div className="analysis-box">
       <div className="flex items-center justify-between mb-2">
         <span className="flex items-center gap-1.5 text-[11px] font-semibold text-[oklch(0.75_0.12_240)]">
-          <Cpu size={11} /> AI 数据分析
+          <Cpu size={11} /> {title}
           {isCached && text && !loading && (
             <span className="rounded border border-[oklch(0.72_0.05_160/55%)] px-1 py-0 text-[9px] font-medium text-[oklch(0.45_0.09_160)]">
               已缓存
