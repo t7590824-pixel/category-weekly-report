@@ -324,6 +324,8 @@ function buildSalesStats(
 ) {
   const fmtRow = (row: any) => ({
     category: row.category,
+    sales: fmtMoney(row.cur?.sales),
+    salesCmp: fmtMoney(row.cmp?.sales),
     salesChg: fmtChgStr(row.cur?.sales, row.cmp?.sales),
     exposureChg: fmtChgStr(row.cur?.exposure, row.cmp?.exposure),
     uvChg: fmtChgStr(row.cur?.uv, row.cmp?.uv),
@@ -334,13 +336,30 @@ function buildSalesStats(
     salesShareCmp: fmtShareStr(row.salesShareCmp),
     salesShareChg: fmtShareChgStr(row.salesShare, row.salesShareCmp),
   });
+  const rows = [
+    { ...fmtRow(multiTotal), category: "多品类" },
+    ...categories.map(fmtRow),
+  ];
+
   return {
+    module: label === "同比" ? "sales_yoy" : "sales_wow",
     label,
     curWeek: weeks.cur,
     cmpWeek: weeks.cmp,
-    multiTotal: fmtRow(multiTotal),
-    categories: categories.map(fmtRow),
-    note: "salesShare/salesShareCmp 为本期/对比期占比，salesShareChg 为百分点差（pp），已预计算，请直接引用，不要自行计算变化率。",
+    rows,
+    outputOrder: rows.map((row) => row.category),
+    fieldRules: {
+      sales: "本期销售额，已格式化，可直接引用",
+      salesCmp: "对比期销售额，已格式化，可直接引用",
+      salesChg: `销售额${label}，已预计算，可直接引用`,
+      exposureChg: `曝光${label}，已预计算，可直接引用`,
+      uvChg: `UV${label}，已预计算，可直接引用`,
+      uvOutputChg: `UV产出${label}，已预计算，可直接引用`,
+      ctrChg: `CTR${label}，已预计算，可直接引用`,
+      cvrChg: `CVR${label}，已预计算，可直接引用`,
+      salesShareChg: "销售占比百分点差（pp），已预计算，禁止自行计算",
+    },
+    note: `请只分析 rows 中列出的品类，并严格按 outputOrder 顺序输出；所有变化率都已预计算，直接引用字段值，不要自行计算。`,
   };
 }
 
