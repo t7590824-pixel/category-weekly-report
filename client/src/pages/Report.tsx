@@ -459,29 +459,24 @@ function buildElementsStats(
     avgExposureOutput: avgOf(items, "exposureOutput"),
   });
 
-  // 新老品占比计算（本期 Top15 中新品 vs 老品）
-  const allCur = [...newTop15, ...oldTop15];
-  const allCmp = [...(cmpNewTop15 ?? []), ...(cmpOldTop15 ?? [])];
-  const curNewCount = newTop15.length;
-  const curOldCount = oldTop15.length;
-  const cmpNewCount = cmpNewTop15?.length ?? 0;
-  const cmpOldCount = cmpOldTop15?.length ?? 0;
-  const curTotal = allCur.length || 1;
-  const cmpTotal = allCmp.length || 1;
-
   const cmpLabel = weeks.cmpLabel ?? weeks.yoy ?? weeks.prev;
+  const pickTopItems = (items: SkcItem[]) =>
+    items.slice(0, 15).map(({ skc, category, occasion, firstSecondColor, sales, uv, ctr, cvr, uvOutput }) => ({
+      skc,
+      secondCategory: category,
+      thirdCategory: occasion,
+      firstSecondColor,
+      sales: fmtMoney(sales ?? null),
+      uv: fmtNum(uv ?? null),
+      ctr: fmtPct(ctr ?? null, 2),
+      cvr: fmtPct(cvr ?? null, 2),
+      uvOutput: fmtRate(uvOutput ?? null, 2),
+    }));
 
   return {
+    module: "bestseller_elements",
     weeks,
     cmpLabel,
-    newRatio: {
-      cur: { count: curNewCount, pct: `${((curNewCount / curTotal) * 100).toFixed(1)}%` },
-      cmp: { count: cmpNewCount, pct: `${((cmpNewCount / cmpTotal) * 100).toFixed(1)}%` },
-    },
-    oldRatio: {
-      cur: { count: curOldCount, pct: `${((curOldCount / curTotal) * 100).toFixed(1)}%` },
-      cmp: { count: cmpOldCount, pct: `${((cmpOldCount / cmpTotal) * 100).toFixed(1)}%` },
-    },
     curStats: {
       new: summarize(newTop15, `本期新品Top15（${weeks.cur}）`),
       old: summarize(oldTop15, `本期老品Top15（${weeks.cur}）`),
@@ -490,11 +485,13 @@ function buildElementsStats(
       new: summarize(cmpNewTop15 ?? [], `同期新品Top15（${cmpLabel}）`),
       old: summarize(cmpOldTop15 ?? [], `同期老品Top15（${cmpLabel}）`),
     },
-    note: "占比已预计算，请直接引用。分析主体是爆款元素组合，不是单个SKC。",
-    curNewTop15: newTop15.map(({ skc, category, occasion, firstSecondColor, sales, uv, ctr, cvr, uvOutput }) => ({ skc, secondCategory: category, thirdCategory: occasion, firstSecondColor, sales, uv, ctr, cvr, uvOutput })),
-    curOldTop15: oldTop15.map(({ skc, category, occasion, firstSecondColor, sales, uv, ctr, cvr, uvOutput }) => ({ skc, secondCategory: category, thirdCategory: occasion, firstSecondColor, sales, uv, ctr, cvr, uvOutput })),
-    cmpNewTop15: (cmpNewTop15 ?? []).map(({ skc, category, occasion, firstSecondColor, sales, uv, ctr, cvr, uvOutput }) => ({ skc, secondCategory: category, thirdCategory: occasion, firstSecondColor, sales, uv, ctr, cvr, uvOutput })),
-    cmpOldTop15: (cmpOldTop15 ?? []).map(({ skc, category, occasion, firstSecondColor, sales, uv, ctr, cvr, uvOutput }) => ({ skc, secondCategory: category, thirdCategory: occasion, firstSecondColor, sales, uv, ctr, cvr, uvOutput })),
+    topSamples: {
+      curNewTop15: pickTopItems(newTop15),
+      curOldTop15: pickTopItems(oldTop15),
+      cmpNewTop15: pickTopItems(cmpNewTop15 ?? []),
+      cmpOldTop15: pickTopItems(cmpOldTop15 ?? []),
+    },
+    note: "分析主体是爆款元素组合，不是单个 SKC；禁止把新品/老品数量或占比作为洞察结论。",
   };
 }
 
@@ -1850,8 +1847,11 @@ export default function Report() {
                           const stats = buildElementsStats(catCurNew, catCurOld, ed.weeks, catCmpNew, catCmpOld);
                           return {
                             ...stats,
-                            curTop15: pickAttrs(catData.curTop15 ?? []),
-                            cmpTop15: pickAttrs(catData.cmpTop15 ?? []),
+                            category: catData.category,
+                            categorySamples: {
+                              curTop15: pickAttrs(catData.curTop15 ?? []),
+                              cmpTop15: pickAttrs(catData.cmpTop15 ?? []),
+                            },
                           };
                         })()}
                       />
