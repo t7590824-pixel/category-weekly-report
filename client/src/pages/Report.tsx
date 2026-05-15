@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { SalesComparisonTable } from "@/components/SalesComparisonTable";
 import { DualPlatformTable } from "@/components/DualPlatformTable";
@@ -451,35 +451,84 @@ function buildElementsStats(
 }
 
 // ─── AI Analysis box ─────────────────────────────────────────────────────────
+function hashString(value: string) {
+  let hash = 0;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+
+  return hash.toString(36);
+}
+
 function AnalysisBox({ moduleKey, data }: { moduleKey: string; data: unknown }) {
   const [text, setText] = useState<string | null>(null);
+  const [isCached, setIsCached] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const analysisMut = trpc.report.generateAnalysis.useMutation();
+  const dataJson = useMemo(() => JSON.stringify(data), [data]);
+  const cacheKey = useMemo(
+    () => `category-report-ai:${moduleKey}:${hashString(dataJson)}`,
+    [moduleKey, dataJson],
+  );
 
-  const generate = useCallback(async () => {
-    setLoading(true);
+  useEffect(() => {
     try {
-      const res = await analysisMut.mutateAsync({ moduleKey, data: JSON.stringify(data) });
-      setText(typeof res.analysis === "string" ? res.analysis : String(res.analysis));
+      const cachedText = window.localStorage.getItem(cacheKey);
+      setText(cachedText);
+      setIsCached(Boolean(cachedText));
+      setError(null);
+    } catch {
+      setText(null);
+      setIsCached(false);
+    }
+  }, [cacheKey]);
+
+  const generate = useCallback(async (forceRefresh = false) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await analysisMut.mutateAsync({ moduleKey, data: dataJson, forceRefresh });
+      const analysisText = typeof res.analysis === "string" ? res.analysis : String(res.analysis);
+      setText(analysisText);
+      setIsCached(Boolean(res.cached));
+      try {
+        window.localStorage.setItem(cacheKey, analysisText);
+      } catch {
+        // Browser storage can be unavailable in private modes; the generated text still displays.
+      }
+    } catch {
+      setError("AI 分析生成失败，请检查 Dify 配置或稍后重试。");
     } finally {
       setLoading(false);
     }
-  }, [moduleKey, data, analysisMut]);
+  }, [moduleKey, dataJson, cacheKey, analysisMut]);
 
   return (
     <div className="analysis-box">
       <div className="flex items-center justify-between mb-2">
         <span className="flex items-center gap-1.5 text-[11px] font-semibold text-[oklch(0.75_0.12_240)]">
           <Cpu size={11} /> AI 数据分析
+          {isCached && text && !loading && (
+            <span className="rounded border border-[oklch(0.72_0.05_160/55%)] px-1 py-0 text-[9px] font-medium text-[oklch(0.45_0.09_160)]">
+              已缓存
+            </span>
+          )}
         </span>
         <button
-          onClick={generate}
+          onClick={() => generate(Boolean(text))}
           disabled={loading}
           className="text-[10px] bg-primary/20 hover:bg-primary/30 border border-primary/40 rounded px-2 py-0.5 text-[oklch(0.75_0.12_240)] transition-colors disabled:opacity-50"
         >
           {loading ? "生成中..." : text ? "重新生成" : "生成分析"}
         </button>
       </div>
+      {error && (
+        <div className="mb-2 rounded border border-red-200 bg-red-50 px-2 py-1 text-[10px] text-red-700">
+          {error}
+        </div>
+      )}
       {text && (
         <div className="text-[11px] text-foreground/90 leading-relaxed whitespace-pre-wrap">{text}</div>
       )}

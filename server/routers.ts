@@ -6,6 +6,12 @@ import { publicProcedure, router } from "./_core/trpc";
 import { invokeAnalysisModel } from "./_core/analysis";
 import { ANALYSIS_PROMPTS } from "./_core/modulePrompts";
 import {
+  buildAnalysisCacheKey,
+  clearAnalysisCache,
+  getCachedAnalysis,
+  setCachedAnalysis,
+} from "./_core/analysisCache";
+import {
   getTargetData,
   getSalesYoY,
   getSalesWoW,
@@ -111,8 +117,17 @@ export const appRouter = router({
       .input(z.object({
         moduleKey: z.string(),
         data: z.string(), // JSON string of module data
+        forceRefresh: z.boolean().optional().default(false),
       }))
       .mutation(async ({ input }) => {
+        const cacheKey = buildAnalysisCacheKey(input.moduleKey, input.data);
+        if (!input.forceRefresh) {
+          const cachedAnalysis = getCachedAnalysis(cacheKey);
+          if (cachedAnalysis) {
+            return { analysis: cachedAnalysis, cached: true };
+          }
+        }
+
         // elements_cat_* 品类专用 prompt
         const isCatElements = input.moduleKey.startsWith("elements_cat_");
         const catName = isCatElements ? input.moduleKey.replace("elements_cat_", "") : "";
@@ -152,7 +167,8 @@ export const appRouter = router({
             systemPrompt,
             parsedData,
           });
-          return { analysis };
+          setCachedAnalysis(cacheKey, analysis);
+          return { analysis, cached: false };
         }
         const promptKey = input.moduleKey === "targetProgress" ? "target" : input.moduleKey;
         const systemPrompt = isCatElements ? catElementsPrompt : (ANALYSIS_PROMPTS[promptKey] ??
@@ -170,7 +186,8 @@ export const appRouter = router({
           systemPrompt,
           parsedData,
         });
-        return { analysis };
+        setCachedAnalysis(cacheKey, analysis);
+        return { analysis, cached: false };
       }),
 
     // Refresh all data
@@ -178,6 +195,7 @@ export const appRouter = router({
       .input(z.object({ country: z.string().default("UK") }))
       .mutation(async ({ input }) => {
         clearCache();
+        clearAnalysisCache();
         await Promise.all([
           getTargetData(true),
           getSalesYoY(input.country, true),
