@@ -553,6 +553,9 @@ function AnalysisBox({ moduleKey, data }: { moduleKey: string; data: unknown }) 
       {text && (
         <div className="text-[11px] text-foreground/90 leading-relaxed whitespace-pre-wrap">{text}</div>
       )}
+      {loading && (
+        <div className="text-[10px] text-muted-foreground">AI 正在生成本模块分析...</div>
+      )}
       {!text && !loading && (
         <div className="text-[10px] text-muted-foreground">点击"生成分析"，AI 将自动总结本模块数据要点</div>
       )}
