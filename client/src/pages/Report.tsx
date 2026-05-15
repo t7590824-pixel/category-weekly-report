@@ -394,6 +394,35 @@ function avgOf(items: SkcItem[], key: keyof SkcItem): string {
   return avg.toFixed(2);
 }
 
+function buildKeySkcAnalysisData(data: any) {
+  const pickItems = (items: any[] = []) =>
+    items.slice(0, 15).map((item) => ({
+      skc: item.skc,
+      category: item.category ?? item.secondCategory ?? null,
+      firstSecondColor: item.firstSecondColor ?? null,
+      sales: item.sales ?? item.cur?.sales ?? null,
+      salesChg: item.salesChg ?? item.wowChange ?? item.yoyChange ?? null,
+      uv: item.uv ?? item.cur?.uv ?? null,
+      uvOutput: item.uvOutput ?? item.cur?.uvOutput ?? null,
+      ctr: item.ctr ?? item.cur?.ctr ?? null,
+      cvr: item.cvr ?? item.cur?.cvr ?? null,
+    }));
+
+  return {
+    weeks: data.weeks,
+    labels: (data.labels ?? []).map((group: any) => ({
+      label: group.label,
+      cmpType: group.cmpType,
+      note: group.note ?? null,
+      summary: group.summary ?? null,
+      summaryYoy: group.summaryYoy ?? null,
+      topItems: pickItems(group.items),
+      yoyItems: pickItems(group.itemsYoy),
+    })),
+    note: "重点 SKC 分析只基于已登记标签组、汇总指标和 Top15 明细，不要扩展到未登记 SKC。",
+  };
+}
+
 function buildElementsStats(
   newTop15: SkcItem[], oldTop15: SkcItem[],
   weeks: { cur: string; prev: string; yoy?: string; cmpLabel?: string },
@@ -1663,6 +1692,7 @@ export default function Report() {
                   </div>
                 );
               })}
+              <AnalysisBox moduleKey="keySkc" data={buildKeySkcAnalysisData(keySkcQ.data)} />
             </div>
           ) : <div className="text-xs text-muted-foreground">暂无数据，请先在 Google Sheets skc_labels 表中登记 SKC 标签（需包含 skc / label / start_week / note / cmp_type 列）</div>}
         </Section>
