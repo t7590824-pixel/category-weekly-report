@@ -623,6 +623,43 @@ type ChannelRow = {
   exposureShareCmp?: number | null;
 };
 
+function buildChannelAnalysisData(data: any) {
+  const summarizeRows = (rows: ChannelRow[], label: string) =>
+    rows
+      .filter((row) => !row.channel.toLowerCase().includes("affiliate"))
+      .filter((row) => (row.salesShare ?? 0) >= 0.02)
+      .map((row) => ({
+        channel: row.channel,
+        label,
+        sales: fmtMoney(row.cur.sales),
+        salesCmp: fmtMoney(row.cmp.sales),
+        salesShare: fmtShareStr(row.salesShare ?? null),
+        salesShareCmp: fmtShareStr(row.salesShareCmp ?? null),
+        salesChg: fmtChgStr(row.cur.sales, row.cmp.sales),
+        exposureChg: fmtChgStr(row.cur.exposure, row.cmp.exposure),
+        uvChg: fmtChgStr(row.cur.uv, row.cmp.uv),
+        uvOutputChg: fmtChgStr(row.cur.uvOutput, row.cmp.uvOutput),
+        ctrChg: fmtChgStr(row.cur.ctr, row.cmp.ctr),
+        cvrChg: fmtChgStr(row.cur.cvr, row.cmp.cvr),
+      }));
+
+  const wow = summarizeRows(data.wow as ChannelRow[], "环比");
+  const yoy = summarizeRows(data.yoy as ChannelRow[], "同比");
+
+  return {
+    module: "channel",
+    weeks: data.weeks,
+    minSalesShare: "2%",
+    excludedChannels: ["Affiliate"],
+    wow,
+    yoy,
+    focusRows: [...wow, ...yoy].sort((a, b) =>
+      Math.abs(parseFloat(b.salesChg)) - Math.abs(parseFloat(a.salesChg))
+    ),
+    note: "只分析 wow/yoy 中已保留的主渠道；salesChg、exposureChg、uvChg、uvOutputChg、ctrChg、cvrChg 均已预计算，禁止自行计算。",
+  };
+}
+
 function ChannelTable({ rows, curWeek, cmpWeek, label }: { rows: ChannelRow[]; curWeek: string; cmpWeek: string; label: string }) {
   return (
     <div className="table-scroll">
@@ -1033,11 +1070,7 @@ export default function Report() {
                 cmpWeek={channelQ.data.weeks.yoy}
                 label="同比"
               />
-              <AnalysisBox moduleKey="channel" data={{
-                weeks: channelQ.data.weeks,
-                wow: (channelQ.data.wow as ChannelRow[]).filter((r) => !r.channel.toLowerCase().includes('affiliate')),
-                yoy: (channelQ.data.yoy as ChannelRow[]).filter((r) => !r.channel.toLowerCase().includes('affiliate')),
-              }} />
+              <AnalysisBox moduleKey="channel" data={buildChannelAnalysisData(channelQ.data)} />
             </>
           ) : <div className="text-xs text-muted-foreground">暂无数据</div>}
         </Section>
