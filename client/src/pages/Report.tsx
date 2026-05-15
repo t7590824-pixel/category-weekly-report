@@ -779,6 +779,70 @@ function buildSceneAnalysisData(data: any) {
   };
 }
 
+function buildDualPlatformAnalysisData(data: any, categoryWoW: any | null, categoryYoY: any | null) {
+  const summarizePlatform = (label: "环比" | "同比", platform: "APP" | "WEB", row: any) => ({
+    label,
+    platform,
+    sales: fmtMoney(row.cur?.sales),
+    salesChg: fmtChgStr(row.cur?.sales, row.cmp?.sales),
+    salesShare: fmtShareStr(row.share ?? null),
+    salesShareCmp: fmtShareStr(row.shareCmp ?? null),
+    salesShareChg: fmtShareChgStr(row.share ?? null, row.shareCmp ?? null),
+    uvChg: fmtChgStr(row.cur?.uv, row.cmp?.uv),
+    uvShare: fmtShareStr(row.uvShare ?? null),
+    uvShareCmp: fmtShareStr(row.uvShareCmp ?? null),
+    uvShareChg: fmtShareChgStr(row.uvShare ?? null, row.uvShareCmp ?? null),
+    uvOutput: fmtRate(row.cur?.uvOutput, 2),
+    uvOutputChg: fmtChgStr(row.cur?.uvOutput, row.cmp?.uvOutput),
+    ctr: fmtPct(row.cur?.ctr, 2),
+    ctrChg: fmtChgStr(row.cur?.ctr, row.cmp?.ctr),
+    cvr: fmtPct(row.cur?.cvr, 2),
+    cvrChg: fmtChgStr(row.cur?.cvr, row.cmp?.cvr),
+  });
+
+  const summarizeCategoryRows = (source: any | null, label: "环比" | "同比") => {
+    if (!source) return null;
+
+    return {
+      label,
+      multiTotal: {
+        category: "多品类",
+        salesChg: fmtChgStr(source.multiTotal?.cur?.sales, source.multiTotal?.cmp?.sales),
+        uvChg: fmtChgStr(source.multiTotal?.cur?.uv, source.multiTotal?.cmp?.uv),
+        uvOutputChg: fmtChgStr(source.multiTotal?.cur?.uvOutput, source.multiTotal?.cmp?.uvOutput),
+        ctrChg: fmtChgStr(source.multiTotal?.cur?.ctr, source.multiTotal?.cmp?.ctr),
+        cvrChg: fmtChgStr(source.multiTotal?.cur?.cvr, source.multiTotal?.cmp?.cvr),
+      },
+      categories: (source.categories ?? []).map((row: any) => ({
+        category: row.category,
+        salesChg: fmtChgStr(row.cur?.sales, row.cmp?.sales),
+        uvChg: fmtChgStr(row.cur?.uv, row.cmp?.uv),
+        uvOutputChg: fmtChgStr(row.cur?.uvOutput, row.cmp?.uvOutput),
+        ctrChg: fmtChgStr(row.cur?.ctr, row.cmp?.ctr),
+        cvrChg: fmtChgStr(row.cur?.cvr, row.cmp?.cvr),
+      })),
+    };
+  };
+
+  return {
+    module: "dual_platform",
+    weeks: data.weeks,
+    wow: [
+      summarizePlatform("环比", "APP", data.wow.app),
+      summarizePlatform("环比", "WEB", data.wow.web),
+    ],
+    yoy: [
+      summarizePlatform("同比", "APP", data.yoy.app),
+      summarizePlatform("同比", "WEB", data.yoy.web),
+    ],
+    categoryReference: {
+      wow: summarizeCategoryRows(categoryWoW, "环比"),
+      yoy: summarizeCategoryRows(categoryYoY, "同比"),
+    },
+    note: "所有变化率和占比变化均已预计算；请优先比较 APP 与 WEB 的销售占比、UV占比和流量效率差异，再结合 categoryReference 做品类归因。",
+  };
+}
+
 function ChannelTable({ rows, curWeek, cmpWeek, label }: { rows: ChannelRow[]; curWeek: string; cmpWeek: string; label: string }) {
   return (
     <div className="table-scroll">
@@ -1156,17 +1220,17 @@ export default function Report() {
           {dualQ.isLoading ? <Skeleton /> : dualQ.data ? (
             <>
               <DualPlatformTable weeks={dualQ.data.weeks} wow={dualQ.data.wow} yoy={dualQ.data.yoy} />
-              <AnalysisBox moduleKey="dualPlatform" data={{
-                ...dualQ.data,
-                categoryWoW: wowQ.data ? {
+              <AnalysisBox moduleKey="dualPlatform" data={buildDualPlatformAnalysisData(
+                dualQ.data,
+                wowQ.data ? {
                   multiTotal: wowQ.data.multiTotal,
                   categories: wowQ.data.categories.filter((c: any) => ["连衣裙","连体装","罩衫","上衣","下装","牛仔"].includes(c.category))
                 } : null,
-                categoryYoY: yoyQ.data ? {
+                yoyQ.data ? {
                   multiTotal: yoyQ.data.multiTotal,
                   categories: yoyQ.data.categories.filter((c: any) => ["连衣裙","连体装","罩衫","上衣","下装"].includes(c.category))
                 } : null,
-              }} />
+              )} />
             </>
           ) : <div className="text-xs text-muted-foreground">暂无数据</div>}
         </Section>

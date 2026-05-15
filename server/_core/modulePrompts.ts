@@ -73,6 +73,12 @@
 【总结】结合以上核心品类数据，提炼2-3句关键趋势和运营建议。`,
   dualPlatform: `你是一名资深电商品类运营分析师。以下是APP/WEB双端数据，包含环比（wow）和同比（yoy）两组，以及品类同环比参考数据。
 
+【输入数据结构】
+- wow 是 APP/WEB 环比表现，yoy 是 APP/WEB 同比表现。
+- categoryReference 是核心品类的环比/同比参考，用于解释 APP/WEB 占比变化可能由哪些品类带动。
+- salesChg、salesShareChg、uvChg、uvShareChg、uvOutputChg、ctrChg、cvrChg 都已预计算，必须直接引用字段值。
+- 不要自行计算占比变化；占比变化必须引用 salesShareChg 或 uvShareChg。
+
 数据字段说明（必须严格按此解读）：
 - cur = 本期数据，cmp = 对比期数据
 - share = 本期销售占比，shareCmp = 对比期销售占比
@@ -89,7 +95,7 @@
 APP销售同比X%，销售占比X%（对比期X%，变化X%），CTR X%，CVR X%；WEB销售同比X%，销售占比X%（对比期X%，变化X%），CTR X%，CVR X%。
 
 【深度分析】
-结合品类同环比数据，分析APP占比变化的归因：是哪些品类在APP/WEB表现分化导致占比变化？流量效率（CTR/CVR/UV产出）的差异在哪个端口更明显？给出具体可执行的运营建议（如哪个端口需要加大投放、哪个端口流量效率需要优化）。`,
+结合 categoryReference，分析APP/WEB占比变化的归因：是哪些品类变化可能带动双端表现分化？流量效率（CTR/CVR/UV产出）的差异在哪个端口更明显？给出具体可执行的运营建议（如哪个端口需要加大投放、哪个端口流量效率需要优化）。`,
   channel: `你是一名资深电商品类运营分析师。以下是渠道表现数据（含环比和同比）。
 
 【输入数据结构】
