@@ -660,6 +660,79 @@ function buildChannelAnalysisData(data: any) {
   };
 }
 
+function buildNewOldAnalysisData(data: any, isMonthly: boolean) {
+  const summarizeMetricSet = (cur: any, prev: any, yoy: any, extra: any = {}) => ({
+    sales: fmtMoney(cur?.sales),
+    salesWoW: fmtChgStr(cur?.sales, prev?.sales),
+    salesYoY: fmtChgStr(cur?.sales, yoy?.sales),
+    exposureWoW: fmtChgStr(cur?.exposure, prev?.exposure),
+    exposureYoY: fmtChgStr(cur?.exposure, yoy?.exposure),
+    uvWoW: fmtChgStr(cur?.uv, prev?.uv),
+    uvYoY: fmtChgStr(cur?.uv, yoy?.uv),
+    uvOutput: fmtRate(cur?.uvOutput, 2),
+    uvOutputWoW: fmtChgStr(cur?.uvOutput, prev?.uvOutput),
+    uvOutputYoY: fmtChgStr(cur?.uvOutput, yoy?.uvOutput),
+    ctr: fmtPct(cur?.ctr, 2),
+    cvr: fmtPct(cur?.cvr, 2),
+    addCartRate: fmtPct(cur?.addCartRate, 2),
+    avgPrice: fmtMoney(cur?.avgPrice, 2),
+    ...extra,
+  });
+
+  const summaryRows = (["new", "old"] as const).map((type) => {
+    const rangeTotal = data[type === "new" ? "newRangeTotal" : "oldRangeTotal"];
+    return {
+      type: type === "new" ? "新品" : "老品",
+      ...summarizeMetricSet(
+        data.summary?.[type]?.cur,
+        data.summary?.[type]?.prev,
+        data.summary?.[type]?.yoy,
+        {
+          salesShare: fmtShareStr(rangeTotal?.salesShare ?? null),
+          salesSharePrev: fmtShareStr(rangeTotal?.salesSharePrev ?? null),
+          salesShareYoy: fmtShareStr(rangeTotal?.salesShareYoy ?? null),
+          uvShare: fmtShareStr(rangeTotal?.uvShare ?? null),
+          uvSharePrev: fmtShareStr(rangeTotal?.uvSharePrev ?? null),
+          uvShareYoy: fmtShareStr(rangeTotal?.uvShareYoy ?? null),
+        },
+      ),
+    };
+  });
+
+  const summarizeRangeRows = (rows: any[] = [], type: "新品" | "老品") =>
+    rows.map((row) => ({
+      type,
+      range: row.range,
+      ...summarizeMetricSet(row.cur, row.prev, row.yoy),
+    }));
+
+  const monthlyCategoryRows = data.monthlyCatBreakdown
+    ? Object.entries(data.monthlyCatBreakdown).map(([category, value]: [string, any]) => ({
+        category,
+        new: summarizeMetricSet(value.new?.cur, value.new?.prev, value.new?.yoy),
+        old: summarizeMetricSet(value.old?.cur, value.old?.prev, value.old?.yoy),
+        total: summarizeMetricSet(value.total?.cur, value.total?.prev, value.total?.yoy),
+      }))
+    : undefined;
+
+  return {
+    module: "new_old_product",
+    weeks: data.weeks,
+    mode: isMonthly ? "月报" : "周报",
+    summaryRows,
+    ...(!isMonthly
+      ? {
+          rangeRows: [
+            ...summarizeRangeRows(data.newByRangeCmp, "新品"),
+            ...summarizeRangeRows(data.oldByRangeCmp, "老品"),
+          ],
+        }
+      : {}),
+    ...(monthlyCategoryRows ? { monthlyCategoryRows } : {}),
+    note: "所有变化率已预计算；请优先比较新品与老品的销售贡献、流量效率和在架节奏，不要分析未提供的 SKC 明细。",
+  };
+}
+
 function ChannelTable({ rows, curWeek, cmpWeek, label }: { rows: ChannelRow[]; curWeek: string; cmpWeek: string; label: string }) {
   return (
     <div className="table-scroll">
@@ -1416,27 +1489,7 @@ export default function Report() {
                 </div>
               )}
 
-              <AnalysisBox moduleKey="newOld" data={(() => {
-                const d = newOldQ.data as any;
-                // 只传汇总指标，避免 Top15/Range 明细超出 LLM token 上限
-                const catSummary = d.monthlyCatBreakdown
-                  ? Object.fromEntries(
-                      Object.entries(d.monthlyCatBreakdown).map(([cat, v]: [string, any]) => [
-                        cat,
-                        {
-                          new: { cur: v.new?.cur, prev: v.new?.prev, yoy: v.new?.yoy },
-                          old: { cur: v.old?.cur, prev: v.old?.prev, yoy: v.old?.yoy },
-                          total: { cur: v.total?.cur, prev: v.total?.prev, yoy: v.total?.yoy },
-                        },
-                      ])
-                    )
-                  : undefined;
-                return {
-                  weeks: d.weeks,
-                  summary: d.summary,
-                  ...(catSummary ? { monthlyCatBreakdown: catSummary } : {}),
-                };
-              })()} />
+              <AnalysisBox moduleKey="newOld" data={buildNewOldAnalysisData(newOldQ.data, isMonthly)} />
             </>
           ) : <div className="text-xs text-muted-foreground">暂无数据</div>}
         </Section>
