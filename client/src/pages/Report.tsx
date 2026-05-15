@@ -733,6 +733,52 @@ function buildNewOldAnalysisData(data: any, isMonthly: boolean) {
   };
 }
 
+function buildSceneAnalysisData(data: any) {
+  const summarizeScene = (scene: any) => ({
+    scene: scene.scene,
+    sales: fmtMoney(scene.cur?.sales),
+    salesShare: fmtShareStr(scene.salesShare ?? null),
+    salesSharePrev: fmtShareStr(scene.salesSharePrev ?? null),
+    salesShareYoy: fmtShareStr(scene.salesShareYoy ?? null),
+    salesShareWoWChg: fmtShareChgStr(scene.salesShare ?? null, scene.salesSharePrev ?? null),
+    salesShareYoYChg: fmtShareChgStr(scene.salesShare ?? null, scene.salesShareYoy ?? null),
+    salesWoW: fmtChgStr(scene.cur?.sales, scene.prev?.sales),
+    salesYoY: fmtChgStr(scene.cur?.sales, scene.yoy?.sales),
+    exposureWoW: fmtChgStr(scene.cur?.exposure, scene.prev?.exposure),
+    exposureYoY: fmtChgStr(scene.cur?.exposure, scene.yoy?.exposure),
+    uvWoW: fmtChgStr(scene.cur?.uv, scene.prev?.uv),
+    uvYoY: fmtChgStr(scene.cur?.uv, scene.yoy?.uv),
+    uvShare: fmtShareStr(scene.uvShare ?? null),
+    uvOutput: fmtRate(scene.cur?.uvOutput, 2),
+    uvOutputWoW: fmtChgStr(scene.cur?.uvOutput, scene.prev?.uvOutput),
+    uvOutputYoY: fmtChgStr(scene.cur?.uvOutput, scene.yoy?.uvOutput),
+    ctr: fmtPct(scene.cur?.ctr, 2),
+    ctrWoW: fmtChgStr(scene.cur?.ctr, scene.prev?.ctr),
+    ctrYoY: fmtChgStr(scene.cur?.ctr, scene.yoy?.ctr),
+    cvr: fmtPct(scene.cur?.cvr, 2),
+    cvrWoW: fmtChgStr(scene.cur?.cvr, scene.prev?.cvr),
+    cvrYoY: fmtChgStr(scene.cur?.cvr, scene.yoy?.cvr),
+    skcCount: scene.skcCount ?? null,
+  });
+
+  const sceneRows = (data.scenes ?? []).map(summarizeScene);
+  const parseChange = (value: string) => {
+    const parsed = parseFloat(value.replace("%", ""));
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  return {
+    module: "scene",
+    weeks: data.weeks,
+    total: summarizeScene(data.total),
+    sceneRows,
+    growthRows: [...sceneRows].sort((a, b) => parseChange(b.salesWoW) - parseChange(a.salesWoW)).slice(0, 3),
+    declineRows: [...sceneRows].sort((a, b) => parseChange(a.salesWoW) - parseChange(b.salesWoW)).slice(0, 3),
+    shareRows: [...sceneRows].sort((a, b) => parseFloat(b.salesShare) - parseFloat(a.salesShare)).slice(0, 5),
+    note: "所有变化率和占比变化都已预计算；请只分析 sceneRows 中出现的场景，不要扩展到未提供场景。",
+  };
+}
+
 function ChannelTable({ rows, curWeek, cmpWeek, label }: { rows: ChannelRow[]; curWeek: string; cmpWeek: string; label: string }) {
   return (
     <div className="table-scroll">
@@ -1592,7 +1638,7 @@ export default function Report() {
                   </tbody>
                 </table>
               </div>
-              <AnalysisBox moduleKey="scene" data={sceneQ.data} />
+              <AnalysisBox moduleKey="scene" data={buildSceneAnalysisData(sceneQ.data)} />
 
               {/* Scene × Category breakdown */}
               <SubTitle>场景×品类拆解（多品类，剥除泳衣）</SubTitle>
