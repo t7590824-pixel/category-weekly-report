@@ -20,6 +20,7 @@ import {
   getNewOldData,
   getSceneData,
   getSceneByCategoryData,
+  getOccasionData,
   getBestsellerElements,
   getNewOldRangeTop15,
   getAvailableCountries,
@@ -92,6 +93,10 @@ export const appRouter = router({
     sceneByCategoryData: publicProcedure
       .input(countryInput)
       .query(({ input }) => getSceneByCategoryData(input.country, input.forceRefresh, input.period)),
+
+    occasionPerformance: publicProcedure
+      .input(countryInput)
+      .query(({ input }) => getOccasionData(input.country, input.forceRefresh, input.period)),
 
     // 2.4 Competitor analysis
     competitors: publicProcedure
@@ -202,6 +207,7 @@ export const appRouter = router({
           getNewOldData(input.country, true),
           getSceneData(input.country, true),
           getSceneByCategoryData(input.country, true),
+          getOccasionData(input.country, true),
           getCompetitorData(true),
           getBestsellerElements(input.country, true),
           getNewOldRangeTop15(input.country, true),

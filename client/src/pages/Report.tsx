@@ -82,6 +82,30 @@ type SceneByCatData = {
   }>;
 };
 
+type OccasionData = {
+  weeks: { cur: string; prev: string; yoy: string };
+  categories: string[];
+  occasions: Array<{
+    occasion: string;
+    categories: Array<{
+      category: string;
+      cur: MetricSet;
+      prev: MetricSet;
+      yoy: MetricSet;
+      salesShare: number | null;
+      salesSharePrev: number | null;
+      salesShareYoy: number | null;
+      exposureShare: number | null;
+      exposureSharePrev: number | null;
+      exposureShareYoy: number | null;
+      uvShare: number | null;
+      uvSharePrev: number | null;
+      uvShareYoy: number | null;
+      skcCount: number;
+    }>;
+  }>;
+};
+
 function SceneByCategoryTable({ data }: { data: SceneByCatData }) {
   const [activeScene, setActiveScene] = useState<string>("");
 
@@ -245,6 +269,104 @@ function SceneByCategoryTable({ data }: { data: SceneByCatData }) {
           </table>
         </div>
       )}
+    </div>
+  );
+}
+
+function OccasionTable({ data }: { data: OccasionData }) {
+  const [activeCategory, setActiveCategory] = useState<string>("多品类");
+
+  return (
+    <div>
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        {data.categories.map((name) => (
+          <button
+            key={name}
+            onClick={() => setActiveCategory(name)}
+            className={`text-[10px] px-2.5 py-1 rounded-full border transition-colors ${
+              activeCategory === name
+                ? "bg-primary/20 border-primary/60 text-primary font-semibold"
+                : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+            }`}
+          >
+            {name}
+          </button>
+        ))}
+      </div>
+
+      <div className="table-scroll">
+        <table className="report-table compact-table">
+          <thead>
+            <tr>
+              <th rowSpan={2}>occasion</th>
+              <th colSpan={3} className="col-group">销售额</th>
+              <th colSpan={3} className="col-group">销售占比</th>
+              <th colSpan={3} className="col-group">曝光</th>
+              <th colSpan={3} className="col-group">曝光占比</th>
+              <th colSpan={3} className="col-group">UV占比</th>
+              <th colSpan={3} className="col-group">销量</th>
+              <th colSpan={3} className="col-group">UV</th>
+              <th colSpan={3} className="col-group">UV产出</th>
+              <th colSpan={3} className="col-group">千次曝光产出</th>
+              <th colSpan={3} className="col-group">CTR</th>
+              <th colSpan={3} className="col-group">CVR</th>
+            </tr>
+            <tr>
+              {["销售额","销售占比","曝光","曝光占比","UV占比","销量","UV","UV产出","千次曝光产出","CTR","CVR"].map((m) => (
+                <React.Fragment key={m}>
+                  <th className="text-[9px]">{data.weeks.cur}</th>
+                  <th className="text-[9px] text-muted-foreground">环比</th>
+                  <th className="text-[9px] text-muted-foreground">同比</th>
+                </React.Fragment>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {data.occasions.map((item) => {
+              const metric = item.categories.find((entry) => entry.category === activeCategory);
+              if (!metric) return null;
+              return (
+                <tr key={item.occasion}>
+                  <td className="cat-name">{item.occasion}</td>
+                  <td>{fmtMoney(metric.cur.sales)}</td>
+                  <ChgCellInline cur={metric.cur.sales} cmp={metric.prev.sales} />
+                  <ChgCellInline cur={metric.cur.sales} cmp={metric.yoy.sales} />
+                  <td>{fmtPct(metric.salesShare)}</td>
+                  <ChgCellInline cur={metric.salesShare} cmp={metric.salesSharePrev} isRate />
+                  <ChgCellInline cur={metric.salesShare} cmp={metric.salesShareYoy} isRate />
+                  <td>{fmtNum(metric.cur.exposure)}</td>
+                  <ChgCellInline cur={metric.cur.exposure} cmp={metric.prev.exposure} />
+                  <ChgCellInline cur={metric.cur.exposure} cmp={metric.yoy.exposure} />
+                  <td>{fmtPct(metric.exposureShare)}</td>
+                  <ChgCellInline cur={metric.exposureShare} cmp={metric.exposureSharePrev} isRate />
+                  <ChgCellInline cur={metric.exposureShare} cmp={metric.exposureShareYoy} isRate />
+                  <td>{fmtPct(metric.uvShare)}</td>
+                  <ChgCellInline cur={metric.uvShare} cmp={metric.uvSharePrev} isRate />
+                  <ChgCellInline cur={metric.uvShare} cmp={metric.uvShareYoy} isRate />
+                  <td>{fmtNum(metric.cur.qty)}</td>
+                  <ChgCellInline cur={metric.cur.qty} cmp={metric.prev.qty} />
+                  <ChgCellInline cur={metric.cur.qty} cmp={metric.yoy.qty} />
+                  <td>{fmtNum(metric.cur.uv)}</td>
+                  <ChgCellInline cur={metric.cur.uv} cmp={metric.prev.uv} />
+                  <ChgCellInline cur={metric.cur.uv} cmp={metric.yoy.uv} />
+                  <td>{fmtRate(metric.cur.uvOutput, 2)}</td>
+                  <ChgCellInline cur={metric.cur.uvOutput} cmp={metric.prev.uvOutput} isRate />
+                  <ChgCellInline cur={metric.cur.uvOutput} cmp={metric.yoy.uvOutput} isRate />
+                  <td>{fmtRate(metric.cur.exposureOutput, 2)}</td>
+                  <ChgCellInline cur={metric.cur.exposureOutput} cmp={metric.prev.exposureOutput} isRate />
+                  <ChgCellInline cur={metric.cur.exposureOutput} cmp={metric.yoy.exposureOutput} isRate />
+                  <td>{fmtPct(metric.cur.ctr, 2)}</td>
+                  <ChgCellInline cur={metric.cur.ctr} cmp={metric.prev.ctr} isRate />
+                  <ChgCellInline cur={metric.cur.ctr} cmp={metric.yoy.ctr} isRate />
+                  <td>{fmtPct(metric.cur.cvr, 2)}</td>
+                  <ChgCellInline cur={metric.cur.cvr} cmp={metric.prev.cvr} isRate />
+                  <ChgCellInline cur={metric.cur.cvr} cmp={metric.yoy.cvr} isRate />
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -1068,6 +1190,7 @@ export default function Report() {
   const newOldQ     = trpc.report.newOldProducts.useQuery(queryOpts);
   const sceneQ      = trpc.report.scenePerformance.useQuery(queryOpts);
   const sceneByCatQ = trpc.report.sceneByCategoryData.useQuery(queryOpts);
+  const occasionQ   = trpc.report.occasionPerformance.useQuery(queryOpts);
   const competitorQ = trpc.report.competitors.useQuery({ forceRefresh: false });
   const elementsQ   = trpc.report.bestsellerElements.useQuery(queryOpts);
   const rangeTop15Q  = trpc.report.newOldRangeTop15.useQuery(queryOpts);
@@ -1091,6 +1214,7 @@ export default function Report() {
         newOldQ.refetch(),
         sceneQ.refetch(),
         sceneByCatQ.refetch(),
+        occasionQ.refetch(),
         competitorQ.refetch(),
         elementsQ.refetch(),
         rangeTop15Q.refetch(),
@@ -1099,7 +1223,7 @@ export default function Report() {
     } finally {
       setIsRefreshing(false);
     }
-  }, [country, refreshMut, utils]);
+  }, [country, refreshMut, utils, occasionQ]);
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
@@ -1785,6 +1909,13 @@ export default function Report() {
               <SubTitle>场景×品类拆解（多品类，剥除泳衣）</SubTitle>
               {sceneByCatQ.isLoading ? <Skeleton /> : sceneByCatQ.data ? (
                 <SceneByCategoryTable data={sceneByCatQ.data} />
+              ) : <div className="text-xs text-muted-foreground">暂无数据</div>}
+
+              <SubTitle>
+                occasion表现（{occasionQ.data?.weeks.cur ?? sceneQ.data.weeks.cur} vs {occasionQ.data?.weeks.prev ?? sceneQ.data.weeks.prev} / {occasionQ.data?.weeks.yoy ?? sceneQ.data.weeks.yoy}）
+              </SubTitle>
+              {occasionQ.isLoading ? <Skeleton /> : occasionQ.data ? (
+                <OccasionTable data={occasionQ.data} />
               ) : <div className="text-xs text-muted-foreground">暂无数据</div>}
             </>
           ) : <div className="text-xs text-muted-foreground">暂无数据</div>}

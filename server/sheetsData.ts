@@ -839,6 +839,96 @@ export async function getSceneByCategoryData(country: string, forceRefresh = fal
   return { weeks: { cur, prev, yoy }, scenes: result };
 }
 
+export async function getOccasionData(country: string, forceRefresh = false, period?: string) {
+  const rows = period && isMonthlyPeriod(period)
+    ? await fetchMonthlyFromDb(forceRefresh)
+    : await fetchSheet(GID.skc, forceRefresh);
+  const { cur, prev, yoy } = detectWeeks(rows, period);
+  const TARGET_CATEGORIES = ["多品类", "连衣裙", "罩衫", "连体装", "上衣", "下装", "针织服装", "外套"];
+
+  const filterCW = (week: string) =>
+    rows.filter(
+      (r) =>
+        String(r["business_year_and_week"]) === week &&
+        (!country || !r["country"] || String(r["country"]).toUpperCase() === country.toUpperCase())
+    );
+
+  const curRows = filterCW(cur);
+  const prevRows = filterCW(prev);
+  const yoyRows = filterCW(yoy);
+
+  const allSkcs = Array.from(
+    new Set([...curRows, ...prevRows, ...yoyRows].map((row) => String(row["skc"])).filter(Boolean)),
+  );
+  const tagMap = await getHengshiSkcTags(allSkcs);
+
+  const attachOccasion = (inputRows: RawRow[]) =>
+    inputRows.map((row) => {
+      const skc = String(row["skc"]);
+      const tag = tagMap.get(skc);
+      return {
+        row,
+        category: String(row["second_category"] ?? ""),
+        occasion: tag?.occasionZh ?? "未标注",
+      };
+    });
+
+  const curTagged = attachOccasion(curRows);
+  const prevTagged = attachOccasion(prevRows);
+  const yoyTagged = attachOccasion(yoyRows);
+
+  const occasions = Array.from(new Set(curTagged.map((item) => item.occasion))).filter(Boolean).sort();
+
+  const computeFor = (items: typeof curTagged, occasion: string, category: string) => {
+    const filtered = items.filter((item) => item.occasion === occasion && (category === "多品类" || item.category === category)).map((item) => item.row);
+    return compute(aggRows(filtered));
+  };
+
+  const totalFor = (items: typeof curTagged, category: string) =>
+    compute(aggRows(items.filter((item) => category === "多品类" || item.category === category).map((item) => item.row)));
+
+  const categories = TARGET_CATEGORIES.filter((category) =>
+    category === "多品类" || curTagged.some((item) => item.category === category),
+  );
+
+  return {
+    weeks: { cur, prev, yoy },
+    categories,
+    occasions: occasions.map((occasion) => {
+      const byCategory = categories.map((category) => {
+        const curMetric = computeFor(curTagged, occasion, category);
+        const prevMetric = computeFor(prevTagged, occasion, category);
+        const yoyMetric = computeFor(yoyTagged, occasion, category);
+        const curTotal = totalFor(curTagged, category);
+        const prevTotal = totalFor(prevTagged, category);
+        const yoyTotal = totalFor(yoyTagged, category);
+
+        return {
+          category,
+          cur: curMetric,
+          prev: prevMetric,
+          yoy: yoyMetric,
+          salesShare: curTotal.sales ? curMetric.sales / curTotal.sales : null,
+          salesSharePrev: prevTotal.sales ? prevMetric.sales / prevTotal.sales : null,
+          salesShareYoy: yoyTotal.sales ? yoyMetric.sales / yoyTotal.sales : null,
+          exposureShare: curTotal.exposure ? curMetric.exposure / curTotal.exposure : null,
+          exposureSharePrev: prevTotal.exposure ? prevMetric.exposure / prevTotal.exposure : null,
+          exposureShareYoy: yoyTotal.exposure ? yoyMetric.exposure / yoyTotal.exposure : null,
+          uvShare: curTotal.uv ? curMetric.uv / curTotal.uv : null,
+          uvSharePrev: prevTotal.uv ? prevMetric.uv / prevTotal.uv : null,
+          uvShareYoy: yoyTotal.uv ? yoyMetric.uv / yoyTotal.uv : null,
+          skcCount: new Set(curTagged.filter((item) => item.occasion === occasion && (category === "多品类" || item.category === category)).map((item) => item.row["skc"])).size,
+        };
+      });
+
+      return {
+        occasion,
+        categories: byCategory,
+      };
+    }),
+  };
+}
+
 // ─── Fetch SKC → image URL map from image Sheet ────────────────────────────
 async function fetchImageMap(forceRefresh = false): Promise<Map<string, string>> {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID.image}`;
