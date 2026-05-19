@@ -299,24 +299,23 @@ function OccasionTable({ data }: { data: OccasionData }) {
           <thead>
             <tr>
               <th rowSpan={2}>occasion</th>
-              <th colSpan={3} className="col-group">销售额</th>
-              <th colSpan={3} className="col-group">销售占比</th>
-              <th colSpan={3} className="col-group">曝光</th>
-              <th colSpan={3} className="col-group">曝光占比</th>
-              <th colSpan={3} className="col-group">UV占比</th>
-              <th colSpan={3} className="col-group">销量</th>
-              <th colSpan={3} className="col-group">UV</th>
-              <th colSpan={3} className="col-group">UV产出</th>
-              <th colSpan={3} className="col-group">千次曝光产出</th>
-              <th colSpan={3} className="col-group">CTR</th>
-              <th colSpan={3} className="col-group">CVR</th>
+              <th colSpan={2} className="col-group">销售额</th>
+              <th colSpan={2} className="col-group">销售占比</th>
+              <th colSpan={2} className="col-group">曝光</th>
+              <th colSpan={2} className="col-group">曝光占比</th>
+              <th colSpan={2} className="col-group">UV占比</th>
+              <th colSpan={2} className="col-group">销量</th>
+              <th colSpan={2} className="col-group">UV</th>
+              <th colSpan={2} className="col-group">UV产出</th>
+              <th colSpan={2} className="col-group">千次曝光产出</th>
+              <th colSpan={2} className="col-group">CTR</th>
+              <th colSpan={2} className="col-group">CVR</th>
             </tr>
             <tr>
               {["销售额","销售占比","曝光","曝光占比","UV占比","销量","UV","UV产出","千次曝光产出","CTR","CVR"].map((m) => (
                 <React.Fragment key={m}>
                   <th className="text-[9px]">{data.weeks.cur}</th>
                   <th className="text-[9px] text-muted-foreground">环比</th>
-                  <th className="text-[9px] text-muted-foreground">同比</th>
                 </React.Fragment>
               ))}
             </tr>
@@ -330,37 +329,26 @@ function OccasionTable({ data }: { data: OccasionData }) {
                   <td className="cat-name">{item.occasion}</td>
                   <td>{fmtMoney(metric.cur.sales)}</td>
                   <ChgCellInline cur={metric.cur.sales} cmp={metric.prev.sales} />
-                  <ChgCellInline cur={metric.cur.sales} cmp={metric.yoy.sales} />
                   <td>{fmtPct(metric.salesShare)}</td>
                   <ChgCellInline cur={metric.salesShare} cmp={metric.salesSharePrev} isRate />
-                  <ChgCellInline cur={metric.salesShare} cmp={metric.salesShareYoy} isRate />
                   <td>{fmtNum(metric.cur.exposure)}</td>
                   <ChgCellInline cur={metric.cur.exposure} cmp={metric.prev.exposure} />
-                  <ChgCellInline cur={metric.cur.exposure} cmp={metric.yoy.exposure} />
                   <td>{fmtPct(metric.exposureShare)}</td>
                   <ChgCellInline cur={metric.exposureShare} cmp={metric.exposureSharePrev} isRate />
-                  <ChgCellInline cur={metric.exposureShare} cmp={metric.exposureShareYoy} isRate />
                   <td>{fmtPct(metric.uvShare)}</td>
                   <ChgCellInline cur={metric.uvShare} cmp={metric.uvSharePrev} isRate />
-                  <ChgCellInline cur={metric.uvShare} cmp={metric.uvShareYoy} isRate />
                   <td>{fmtNum(metric.cur.qty)}</td>
                   <ChgCellInline cur={metric.cur.qty} cmp={metric.prev.qty} />
-                  <ChgCellInline cur={metric.cur.qty} cmp={metric.yoy.qty} />
                   <td>{fmtNum(metric.cur.uv)}</td>
                   <ChgCellInline cur={metric.cur.uv} cmp={metric.prev.uv} />
-                  <ChgCellInline cur={metric.cur.uv} cmp={metric.yoy.uv} />
                   <td>{fmtRate(metric.cur.uvOutput, 2)}</td>
                   <ChgCellInline cur={metric.cur.uvOutput} cmp={metric.prev.uvOutput} isRate />
-                  <ChgCellInline cur={metric.cur.uvOutput} cmp={metric.yoy.uvOutput} isRate />
                   <td>{fmtRate(metric.cur.exposureOutput, 2)}</td>
                   <ChgCellInline cur={metric.cur.exposureOutput} cmp={metric.prev.exposureOutput} isRate />
-                  <ChgCellInline cur={metric.cur.exposureOutput} cmp={metric.yoy.exposureOutput} isRate />
                   <td>{fmtPct(metric.cur.ctr, 2)}</td>
                   <ChgCellInline cur={metric.cur.ctr} cmp={metric.prev.ctr} isRate />
-                  <ChgCellInline cur={metric.cur.ctr} cmp={metric.yoy.ctr} isRate />
                   <td>{fmtPct(metric.cur.cvr, 2)}</td>
                   <ChgCellInline cur={metric.cur.cvr} cmp={metric.prev.cvr} isRate />
-                  <ChgCellInline cur={metric.cur.cvr} cmp={metric.yoy.cvr} isRate />
                 </tr>
               );
             })}
@@ -1912,7 +1900,7 @@ export default function Report() {
               ) : <div className="text-xs text-muted-foreground">暂无数据</div>}
 
               <SubTitle>
-                occasion表现（{occasionQ.data?.weeks.cur ?? sceneQ.data.weeks.cur} vs {occasionQ.data?.weeks.prev ?? sceneQ.data.weeks.prev} / {occasionQ.data?.weeks.yoy ?? sceneQ.data.weeks.yoy}）
+                occasion表现（{occasionQ.data?.weeks.cur ?? sceneQ.data.weeks.cur} vs {occasionQ.data?.weeks.prev ?? sceneQ.data.weeks.prev}）
               </SubTitle>
               {occasionQ.isLoading ? <Skeleton /> : occasionQ.data ? (
                 <OccasionTable data={occasionQ.data} />
