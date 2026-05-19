@@ -60,6 +60,14 @@ const OCCASION_TRANSLATIONS: Record<string, string> = {
   studio: "棚拍/无场景",
 };
 
+const OCCASION_ALIASES: Record<string, string> = {
+  active: "outdooradventure",
+  beachwear: "beach",
+  casual: "dailycasual",
+  evening: "partynightout",
+  wedding: "weddingevent",
+};
+
 const TARGET_FIELDS = [
   "skc",
   "second_category",
@@ -101,10 +109,15 @@ function normalizeTagValue(value: unknown) {
 
 function normalizeOccasion(value: string | null) {
   if (!value) return { occasion: null, occasionZh: null };
-  const key = value.trim().toLowerCase().replace(/[\s_-]+/g, "");
+  const key = value
+    .trim()
+    .toLowerCase()
+    .replace(/[\/&,]+/g, "")
+    .replace(/[\s_-]+/g, "");
+  const canonicalKey = OCCASION_ALIASES[key] ?? key;
   return {
-    occasion: value,
-    occasionZh: OCCASION_TRANSLATIONS[key] ?? value,
+    occasion: canonicalKey,
+    occasionZh: OCCASION_TRANSLATIONS[canonicalKey] ?? value,
   };
 }
 

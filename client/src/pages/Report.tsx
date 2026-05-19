@@ -275,6 +275,11 @@ function SceneByCategoryTable({ data }: { data: SceneByCatData }) {
 
 function OccasionTable({ data }: { data: OccasionData }) {
   const [activeCategory, setActiveCategory] = useState<string>("多品类");
+  const sortedOccasions = [...data.occasions].sort((a, b) => {
+    const aMetric = a.categories.find((entry) => entry.category === activeCategory);
+    const bMetric = b.categories.find((entry) => entry.category === activeCategory);
+    return (bMetric?.cur.sales ?? 0) - (aMetric?.cur.sales ?? 0);
+  });
 
   return (
     <div>
@@ -321,7 +326,7 @@ function OccasionTable({ data }: { data: OccasionData }) {
             </tr>
           </thead>
           <tbody>
-            {data.occasions.map((item) => {
+            {sortedOccasions.map((item) => {
               const metric = item.categories.find((entry) => entry.category === activeCategory);
               if (!metric) return null;
               return (

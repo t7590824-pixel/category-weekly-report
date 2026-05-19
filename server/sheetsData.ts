@@ -869,7 +869,10 @@ export async function getOccasionData(country: string, forceRefresh = false, per
       return {
         row,
         category: String(row["second_category"] ?? ""),
-        occasion: tag?.occasionZh ?? "未标注",
+        occasion:
+          tag?.occasion && tag?.occasionZh
+            ? `${tag.occasion} / ${tag.occasionZh}`
+            : tag?.occasionZh ?? "未标注",
       };
     });
 
