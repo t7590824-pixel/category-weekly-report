@@ -1,5 +1,6 @@
 import axios from "axios";
 import { fetchMonthlyFromDb, getMonthlyPeriodsFromDb, clearMonthlyDbCache } from "./monthlyDb";
+import { getHengshiSkcTags, type HengshiSkcTag } from "./_core/hengshi";
 
 const SHEET_ID = "13k-7NiJNTJmz_1drk8a_bAyOnpnsfVKC3NSaWjwJyD4";
 
@@ -939,6 +940,30 @@ export async function getBestsellerElements(country: string, forceRefresh = fals
     return (cur - prev) / Math.abs(prev);
   };
 
+  const enrichWithHengshiTags = <T extends { skc: string; occasion?: unknown }>(
+    items: T[],
+    tagMap: Map<string, HengshiSkcTag>,
+  ) =>
+    items.map((item) => {
+      const tag = tagMap.get(item.skc);
+      if (!tag) return item;
+      return {
+        ...item,
+        primaryColorSystem: tag.primaryColorSystem,
+        primaryPattern: tag.primaryPattern,
+        designDetails: tag.designDetails,
+        shape: tag.shape,
+        collarShape: tag.collarShape,
+        sleeveLength: tag.sleeveLength,
+        dressLength: tag.dressLength,
+        fabricTypes: tag.fabricTypes,
+        strapType: tag.strapType,
+        skirtType: tag.skirtType,
+        occasionTag: tag.occasion,
+        occasionZh: tag.occasionZh ?? item.occasion ?? null,
+      };
+    });
+
   // ─── Build cmp lookup map ─────────────────────────────────────────────────
   const cmpSkcMap = new Map(skcAgg(cmpRows).map((it) => [it.skc, it]));
 
@@ -1025,14 +1050,25 @@ export async function getBestsellerElements(country: string, forceRefresh = fals
     };
   });
 
+  const allSkcs = [
+    ...newTop15,
+    ...oldTop15,
+    ...categoryTop15.flatMap((item) => [...item.curTop15, ...item.cmpTop15]),
+  ].map((item) => item.skc);
+  const hengshiTagMap = await getHengshiSkcTags(allSkcs);
+
   const cmpLabel = isMonthly ? yoy : prev;
 
   return {
     weeks: { cur, prev, yoy, cmpLabel },
     isMonthly,
-    newTop15,
-    oldTop15,
-    categoryTop15,
+    newTop15: enrichWithHengshiTags(newTop15, hengshiTagMap),
+    oldTop15: enrichWithHengshiTags(oldTop15, hengshiTagMap),
+    categoryTop15: categoryTop15.map((item) => ({
+      ...item,
+      curTop15: enrichWithHengshiTags(item.curTop15, hengshiTagMap),
+      cmpTop15: enrichWithHengshiTags(item.cmpTop15, hengshiTagMap),
+    })),
   };
 }
 

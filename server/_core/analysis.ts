@@ -106,7 +106,7 @@ export async function invokeAnalysisModel({
   systemPrompt,
   parsedData,
 }: InvokeAnalysisParams) {
-  const dataJson = JSON.stringify(parsedData, null, 2);
+  const dataJson = JSON.stringify(parsedData);
   const userPrompt = buildUserPrompt(dataJson);
   const guardedSystemPrompt = buildSystemPrompt(systemPrompt);
 

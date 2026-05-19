@@ -132,26 +132,23 @@ export const appRouter = router({
         const isCatElements = input.moduleKey.startsWith("elements_cat_");
         const catName = isCatElements ? input.moduleKey.replace("elements_cat_", "") : "";
         const catElementsPrompt = `你是一名资深电商品类运营分析师，专注于「${catName}」品类的爆款设计元素分析。
-任务：基于本期和同期（去年同期）${catName} Top15 款式的具体属性，提炼设计元素的共性与差异，输出可指导商品开发和选款的洞察。字数控制在100字左右。
+任务：基于本期和对比期 ${catName} Top15 款式的标签属性，提炼已经被 Top 款验证过的爆款元素，并给出可放大方向。字数控制在150字以内。
 
 数据字段说明：
-- curTop15：本期 Top15 SKC 列表，每款包含 thirdCategory（三级品类/款式）、occasion（场合）、firstSecondColor（首复色：首色=该 SKC 版型+颜色首次上架时的颜色；复色=在热销老款版型基础上新增的颜色，非全新版型）、sales、uvOutput、ctr、cvr 等
-- cmpTop15：同期 Top15 SKC 列表，字段同上
-- newRatio/oldRatio：新老品占比
+- curTop15 / cmpTop15：Top15 SKC 列表，包含 thirdCategory、occasion、primaryColorSystem、primaryPattern、designDetails、shape、collarShape、sleeveLength、dressLength、fabricTypes、strapType、skirtType、sales、uvOutput、ctr、cvr 等
 
 分析维度（按优先级）：
-1. 款式结构：thirdCategory 分布（如连衣裙的裙长、裙型），对比本期 vs 同期高频款式
-2. 颜色/印花：firstSecondColor 分布（首色=版型+颜色首次上架；复色=热销版型追加颜色），哪些色系/印花在 Top15 中高频出现，今年 vs 去年有何变化
-3. 场合：occasion 分布，哪个场合款式最畅销，今年 vs 去年有何迁移
-4. 新老品结构：新品靠哪些元素获得流量，老品靠哪些元素维持转化
+1. 款式结构：thirdCategory、shape、dressLength、strapType、skirtType
+2. 颜色与图案：primaryColorSystem、primaryPattern
+3. 设计细节：designDetails、collarShape、sleeveLength
+4. 场景与放大：occasion 在哪些场景高频出现，哪些元素已经被多个 Top 款验证，适合继续放大
 
 输出格式（不使用 Markdown 标题符号 #）：
-一、款式结构对比（本期 vs 同期高频 thirdCategory）
-二、颜色/印花对比（本期 vs 同期高频 firstSecondColor）
-三、场合迁移（occasion 变化）
-四、新老品元素差异与下期选款建议（2-3条）
+一、当前高频爆款元素
+二、相较对比期增强/减弱的元素
+三、可放大方向（2条）
 
-禁止：逐款复述 SKC 编码 / 只报占比不解释含义 / 超过 150 字 / 使用 AI 套话。`;
+禁止：逐款复述 SKC 编码 / 只报频次不解释含义 / 超过 150 字 / 使用 AI 套话。`;
 
         // elements 整体分析：从传入数据中读取 isMonthly 字段，周报用 elements_weekly，月报用 elements
         let isMonthlyData = false;

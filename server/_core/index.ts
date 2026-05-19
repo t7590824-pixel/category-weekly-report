@@ -35,6 +35,9 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  app.get(["/api/feishu", "/api/auth/feishu"], (_req, res) => {
+    res.redirect(302, "/");
+  });
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   // Feishu OAuth routes

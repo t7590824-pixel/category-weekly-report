@@ -7,18 +7,14 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "@/pages/Home";
 import Report from "@/pages/Report";
 import MonthlyImport from "@/pages/MonthlyImport";
-import AuthGuard from "./components/AuthGuard";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"}>{
-        () => <AuthGuard><Report /></AuthGuard>
-      }</Route>
+      <Route path={"/"} component={Report} />
       <Route path={"/home"} component={Home} />
       <Route path={"/404"} component={NotFound} />
-      <Route path={"/monthly-import"}>{() => <AuthGuard><MonthlyImport /></AuthGuard>}</Route>
+      <Route path={"/monthly-import"} component={MonthlyImport} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>

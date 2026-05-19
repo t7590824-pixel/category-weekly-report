@@ -150,6 +150,7 @@ APP销售同比X%，销售占比X%（对比期X%，变化X%），CTR X%，CVR X%
 
 【输入数据结构】
 - curStats/cmpStats 是本期与对比期的元素分布摘要，应优先用于判断二级品类、场景/款式、颜色和效率变化。
+- 标签字段重点看：primaryColorSystem（色系）、primaryPattern（图案）、designDetails（设计细节）、shape（版型）、collarShape（领型）、sleeveLength（袖长）、dressLength（裙长）、fabricTypes（面料）、occasion（场景中文）、strapType、skirtType。
 - topSamples 是 Top 款样本，只用于辅助理解元素组合，不得逐款复述。
 - 如存在 category/categorySamples，说明这是单个二级品类的独立分析，只分析该品类。
 - 禁止把新品/老品数量或占比作为结论，数据中不会提供该结论字段。
@@ -158,19 +159,20 @@ APP销售同比X%，销售占比X%（对比期X%，变化X%），CTR X%，CVR X%
 1. 禁止把"新品/老品占比"作为分析结论，因为数据结构固定为 Top15 新品 + Top15 老品，新老品天然各占 50%，不具备洞察价值。
 2. 必须分析二级品类占比与结构变化，如 Dress、Bikini Set、One Piece、Cover Up、Top、Bottom 等在本期 vs 同期 Top 款中的分布变化，并解释经营含义。
 3. 二级品类占比只能作为款式结构入口，不能停留在报数，必须进一步落到：款式结构 × 颜色 × 印花 × 设计细节 × 经营表现。
-4. 颜色和印花必须分开分析：颜色总结高频色系、基础色/亮色/清爽色/组合色变化；印花总结花卉、热带、条纹、几何、抽象、波点、纯色等图案趋势。禁止只写"颜色丰富""印花多样"。
-5. Beachwear、夏季旺季、价格带只能作为辅助解释，不能作为核心洞察。
-6. 禁止根据缺失数据强行推断；如数据不足，只能写"从 Top 款表现看"或"当前样本中体现"。
-7. 输出控制在 500–700 字。
-8. 取消"下期动作"模块，不输出具体执行动作清单。
+4. 颜色和印花必须分开分析：颜色优先使用 primaryColorSystem，印花优先使用 primaryPattern；设计细节优先使用 designDetails；版型/领型/袖长/裙长分别使用 shape、collarShape、sleeveLength、dressLength。禁止只写"颜色丰富""印花多样"。
+5. 场景分析优先使用 occasion 中文值，说明爆款元素更集中在哪类穿着场景；strapType、skirtType 可用于补充泳衣/裙装的关键爆款结构。
+6. Beachwear、夏季旺季、价格带只能作为辅助解释，不能作为核心洞察。
+7. 禁止根据缺失数据强行推断；如数据不足，只能写"从 Top 款表现看"或"当前样本中体现"。
+8. 输出控制在 500–700 字。
+9. 取消"下期动作"模块，不输出具体执行动作清单。
 
-数据说明：传入数据包含 curNewTop15/curOldTop15（本期新老品 Top15）、cmpNewTop15/cmpOldTop15（同期新老品 Top15），每款 SKC 包含：secondCategory（二级品类）、thirdCategory（三级品类/场合）、firstSecondColor（首复色：首色=该 SKC 版型+颜色首次上架时的颜色；复色=在热销老款版型基础上新增的颜色，非全新版型）、sales、uv、ctr、cvr、uvOutput 等字段。
+数据说明：传入数据包含 curNewTop15/curOldTop15（本期新老品 Top15）、cmpNewTop15/cmpOldTop15（同期新老品 Top15），每款 SKC 包含：secondCategory、thirdCategory、occasion、firstSecondColor、primaryColorSystem、primaryPattern、designDetails、shape、collarShape、sleeveLength、dressLength、fabricTypes、strapType、skirtType、sales、uv、ctr、cvr、uvOutput 等字段。
 
 输出格式（严格按以下格式，不使用 # 标题符号）：
 一、二级品类结构对比（本期 vs 同期）
 二、两期畅销元素共性（款式结构、颜色、印花、设计细节各一段）
 三、本期新增/减弱元素（相较同期变化，结合经营表现解释）
-四、机会点（3条：复色/复印花机会、页面卖点或投放素材机会）
+四、机会点（3条：围绕 Top 款已验证元素，给出可放大的复色/复印花/版型延展/场景素材方向）
 
 禁止：禁止输出"新老品占比对比"；禁止把 Beachwear/夏季旺季/价格带作为核心结论；禁止逐款复述 SKC；禁止输出"下期动作"；禁止超过 700 字。`,
   // 周报专用：本期 vs 上周环比对比
@@ -178,6 +180,7 @@ APP销售同比X%，销售占比X%（对比期X%，变化X%），CTR X%，CVR X%
 
 【输入数据结构】
 - curStats/cmpStats 是本周与上周的元素分布摘要，应优先用于判断二级品类、场景/款式、颜色和效率变化。
+- 标签字段重点看：primaryColorSystem（色系）、primaryPattern（图案）、designDetails（设计细节）、shape（版型）、collarShape（领型）、sleeveLength（袖长）、dressLength（裙长）、fabricTypes（面料）、occasion（场景中文）、strapType、skirtType。
 - topSamples 是 Top 款样本，只用于辅助理解元素组合，不得逐款复述。
 - 如存在 category/categorySamples，说明这是单个二级品类的独立分析，只分析该品类。
 - 禁止把新品/老品数量或占比作为结论，数据中不会提供该结论字段。
@@ -186,18 +189,19 @@ APP销售同比X%，销售占比X%（对比期X%，变化X%），CTR X%，CVR X%
 1. 这是周度环比分析，禁止出现"同比""去年同期""两年对比"等字眼，只分析本周 vs 上周的变化。
 2. 禁止把"新品/老品占比"作为分析结论，因为数据结构固定为 Top15 新品 + Top15 老品，新老品天然各占 50%，不具备洞察价值。
 3. 必须分析二级品类占比变化，如 Dress、One Piece、Cover Up、Top、Bottom 等在本周 vs 上周 Top 款中的分布变化，并解释经营含义。
-4. 颜色和印花必须分开分析：颜色总结高频色系变化；印花总结花卉、热带、条纹、几何、抽象、波点、纯色等图案趋势变化。禁止只写"颜色丰富""印花多样"。
-5. 禁止根据缺失数据强行推断；如数据不足，只能写"从本周 Top 款表现看"。
-6. 输出控制在 400–600 字。
-7. 取消"下期动作"模块，不输出具体执行动作清单。
+4. 颜色和印花必须分开分析：颜色优先使用 primaryColorSystem，印花优先使用 primaryPattern；设计细节优先使用 designDetails；版型/领型/袖长/裙长分别使用 shape、collarShape、sleeveLength、dressLength。禁止只写"颜色丰富""印花多样"。
+5. 场景分析优先使用 occasion 中文值；strapType、skirtType 可用于补充泳衣/裙装结构变化。
+6. 禁止根据缺失数据强行推断；如数据不足，只能写"从本周 Top 款表现看"。
+7. 输出控制在 400–600 字。
+8. 取消"下期动作"模块，不输出具体执行动作清单。
 
-数据说明：传入数据包含 curNewTop15/curOldTop15（本周新老品 Top15）、cmpNewTop15/cmpOldTop15（上周新老品 Top15），每款 SKC 包含：secondCategory（二级品类）、thirdCategory（三级品类/场合）、firstSecondColor（首复色：首色=该 SKC 版型+颜色首次上架时的颜色；复色=在热销老款版型基础上新增的颜色，非全新版型）、sales、uv、ctr、cvr、uvOutput 等字段。
+数据说明：传入数据包含 curNewTop15/curOldTop15（本周新老品 Top15）、cmpNewTop15/cmpOldTop15（上周新老品 Top15），每款 SKC 包含：secondCategory、thirdCategory、occasion、firstSecondColor、primaryColorSystem、primaryPattern、designDetails、shape、collarShape、sleeveLength、dressLength、fabricTypes、strapType、skirtType、sales、uv、ctr、cvr、uvOutput 等字段。
 
 输出格式（严格按以下格式，不使用 # 标题符号）：
 一、本周二级品类结构（本周 vs 上周分布变化）
 二、本周畅销元素特征（款式结构、颜色、印花、设计细节各一段，重点写本周高频元素）
 三、本周相较上周的变化（哪些元素增强/减弱，结合销售/UV 表现解释）
-四、机会点（2-3条：哪些元素/品类值得下周放大）
+四、机会点（2-3条：哪些元素/品类值得下周放大，必须基于 Top 款已验证标签）
 
 禁止：禁止输出"同比""去年同期""两年对比"；禁止输出"新老品占比对比"；禁止把 Beachwear/夏季旺季/价格带作为核心结论；禁止逐款复述 SKC；禁止输出"下期动作"；禁止超过 600 字。`,
 };

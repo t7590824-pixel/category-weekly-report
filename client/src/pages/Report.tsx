@@ -367,8 +367,21 @@ function buildSalesStats(
 type SkcItem = {
   skc: string;
   category?: string | null;
+  thirdCategory?: string | null;
   occasion?: string | null;
+  occasionTag?: string | null;
+  occasionZh?: string | null;
   firstSecondColor?: string | null;
+  primaryColorSystem?: string | null;
+  primaryPattern?: string | null;
+  designDetails?: string | null;
+  shape?: string | null;
+  collarShape?: string | null;
+  sleeveLength?: string | null;
+  dressLength?: string | null;
+  fabricTypes?: string | null;
+  strapType?: string | null;
+  skirtType?: string | null;
   avgPrice?: number | null;
   onShelfDays?: number | null;
   firstListDate?: string | null;
@@ -396,6 +409,41 @@ function groupCount(items: SkcItem[], key: keyof SkcItem): { name: string; count
   return Array.from(map.entries())
     .sort((a, b) => b[1] - a[1])
     .map(([name, count]) => ({ name, count, pct: `${((count / total) * 100).toFixed(1)}%` }));
+}
+
+function splitTagValues(value: string | null | undefined) {
+  if (!value) return [];
+  return Array.from(
+    new Set(
+      value
+        .split(/[,/;|，]+/)
+        .map((item) => item.trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
+function groupMultiValue(items: SkcItem[], key: keyof SkcItem): { name: string; count: number; pct: string }[] {
+  const map = new Map<string, number>();
+  let total = 0;
+
+  for (const it of items) {
+    const values = splitTagValues(typeof it[key] === "string" ? (it[key] as string) : null);
+    if (!values.length) continue;
+    total += 1;
+    for (const value of values) {
+      map.set(value, (map.get(value) ?? 0) + 1);
+    }
+  }
+
+  if (!map.size) {
+    return [{ name: "未知", count: items.length, pct: "100.0%" }];
+  }
+
+  const base = total || 1;
+  return Array.from(map.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, count]) => ({ name, count, pct: `${((count / base) * 100).toFixed(1)}%` }));
 }
 
 function priceBand(price: number | null | undefined): string {
@@ -451,8 +499,18 @@ function buildElementsStats(
     label,
     total: items.length,
     byCategory: groupCount(items, "category"),
-    byOccasion: groupCount(items, "occasion"),
+    byOccasion: groupCount(items, "occasionZh"),
     byFirstSecondColor: groupCount(items, "firstSecondColor"),
+    byPrimaryColorSystem: groupCount(items, "primaryColorSystem"),
+    byPrimaryPattern: groupCount(items, "primaryPattern"),
+    byDesignDetails: groupMultiValue(items, "designDetails"),
+    byShape: groupCount(items, "shape"),
+    byCollarShape: groupCount(items, "collarShape"),
+    bySleeveLength: groupCount(items, "sleeveLength"),
+    byDressLength: groupCount(items, "dressLength"),
+    byFabricTypes: groupMultiValue(items, "fabricTypes"),
+    byStrapType: groupCount(items, "strapType"),
+    bySkirtType: groupCount(items, "skirtType"),
     byPriceBand: groupCount(items.map((it) => ({ ...it, _pb: priceBand(it.avgPrice) })) as any, "_pb" as any),
     avgCtr: avgOf(items, "ctr"),
     avgCvr: avgOf(items, "cvr"),
@@ -461,11 +519,22 @@ function buildElementsStats(
 
   const cmpLabel = weeks.cmpLabel ?? weeks.yoy ?? weeks.prev;
   const pickTopItems = (items: SkcItem[]) =>
-    items.slice(0, 15).map(({ skc, category, occasion, firstSecondColor, sales, uv, ctr, cvr, uvOutput }) => ({
+    items.slice(0, 15).map(({ skc, category, thirdCategory, occasionZh, firstSecondColor, primaryColorSystem, primaryPattern, designDetails, shape, collarShape, sleeveLength, dressLength, fabricTypes, strapType, skirtType, sales, uv, ctr, cvr, uvOutput }) => ({
       skc,
       secondCategory: category,
-      thirdCategory: occasion,
+      thirdCategory,
+      occasion: occasionZh,
       firstSecondColor,
+      primaryColorSystem,
+      primaryPattern,
+      designDetails,
+      shape,
+      collarShape,
+      sleeveLength,
+      dressLength,
+      fabricTypes,
+      strapType,
+      skirtType,
       sales: fmtMoney(sales ?? null),
       uv: fmtNum(uv ?? null),
       ctr: fmtPct(ctr ?? null, 2),
@@ -555,6 +624,13 @@ function AnalysisBox({ moduleKey, data }: { moduleKey: string; data: unknown }) 
     setLoading(true);
     setError(null);
     try {
+      if (forceRefresh) {
+        try {
+          window.localStorage.removeItem(cacheKey);
+        } catch {
+          // Ignore storage cleanup failures and continue with the request.
+        }
+      }
       const res = await analysisMut.mutateAsync({ moduleKey, data: dataJson, forceRefresh });
       const analysisText = typeof res.analysis === "string" ? res.analysis : String(res.analysis);
       setText(analysisText);
@@ -570,6 +646,10 @@ function AnalysisBox({ moduleKey, data }: { moduleKey: string; data: unknown }) 
       setLoading(false);
     }
   }, [moduleKey, dataJson, cacheKey, analysisMut]);
+
+  useEffect(() => {
+    setError(null);
+  }, [dataJson]);
 
   return (
     <div className="analysis-box">
